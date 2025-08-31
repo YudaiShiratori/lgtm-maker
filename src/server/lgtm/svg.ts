@@ -23,7 +23,6 @@ function getInterFontBase64(): string {
  * LGTM用のSVGオーバーレイを生成
  * 仕様：
  * - キャンバス：1200×630
- * - 枠線：黒ボーダー24px
  * - テキスト：中央の白文字「LGTM」、Inter Bold
  */
 export function generateLgtmSvg(): string {
@@ -42,14 +41,14 @@ export function generateLgtmSvg(): string {
     </style>
   </defs>
   
-  <!-- 黒ボーダー24px -->
-  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#000" stroke-width="24" />
   
-  <!-- 中央の白文字「LGTM」 -->
+  <!-- 中央の白文字「LGTM」with黒ボーダー -->
   <text 
     x="600" 
     y="315" 
     fill="#fff" 
+    stroke="rgba(0,0,0,0.8)"
+    stroke-width="2"
     font-weight="700" 
     text-anchor="middle" 
     dominant-baseline="middle" 

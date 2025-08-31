@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { generateLgtmImage } from '~/server/lgtm/composite';
+import { shortenUrl } from '~/server/lib/shortener';
 
 const generateInput = z
   .object({
@@ -14,20 +15,40 @@ const generateInput = z
 
 export type GenerateResult = {
   imageUrl: string; // data:image/png;base64,...
-  markdown: string; // "![LGTM](imageUrl)"
+  shortUrl: string; // "/s/abc123"
+  markdown: string; // "![LGTM](shortUrl)"
   meta: {
-    bytes: number;
-    generatedAt: string;
+    shortId: string;
   };
 };
 
 export const lgtmRouter = createTRPCRouter({
   generate: publicProcedure
     .input(generateInput)
-    .mutation(async ({ input }): Promise<GenerateResult> => {
+    .mutation(async ({ input, ctx }): Promise<GenerateResult> => {
       try {
         const result = await generateLgtmImage(input);
-        return result;
+
+        // 短縮URL生成
+        const shortResult = shortenUrl(result.imageUrl);
+
+        // 絶対URLを構築
+        const headers = ctx.req?.headers;
+        const baseUrl =
+          process.env.BASE_URL ||
+          (headers?.host
+            ? `${headers?.['x-forwarded-proto'] || (headers.host.includes('localhost') ? 'http' : 'https')}://${headers.host}`
+            : 'http://localhost:3000');
+        const absoluteShortUrl = `${baseUrl}${shortResult.shortUrl}`;
+
+        return {
+          imageUrl: result.imageUrl,
+          shortUrl: shortResult.shortUrl, // UIでは相対パスを使用
+          markdown: `![LGTM](${absoluteShortUrl})`, // Markdownでは絶対URLを使用
+          meta: {
+            shortId: shortResult.shortId,
+          },
+        };
       } catch (error) {
         // エラーメッセージを分かりやすく変換
         let errorMessage = 'LGTM画像の生成に失敗しました';

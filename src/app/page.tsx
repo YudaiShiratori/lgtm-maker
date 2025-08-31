@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import {
@@ -16,10 +16,10 @@ import { api } from '~/trpc/react';
 
 interface GeneratedImage {
   imageUrl: string;
+  shortUrl: string;
   markdown: string;
   meta: {
-    bytes: number;
-    generatedAt: string;
+    shortId: string;
   };
 }
 
@@ -29,13 +29,12 @@ export default function HomePage() {
   const [generatedImage, setGeneratedImage] = useState<GeneratedImage | null>(
     null
   );
+  const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const generateMutation = api.lgtm.generate.useMutation({
     onSuccess: (data) => {
       setGeneratedImage(data);
-      // 自動ダウンロード
-      downloadImage(data.imageUrl);
       // Markdown自動コピー
       copyMarkdown(data.markdown);
       toast.success(
@@ -75,16 +74,6 @@ export default function HomePage() {
     });
   };
 
-  // 自動ダウンロード
-  const downloadImage = (dataUrl: string) => {
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `lgtm-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Markdownクリップボードコピー
   const copyMarkdown = async (markdown: string) => {
     try {
@@ -94,10 +83,29 @@ export default function HomePage() {
     }
   };
 
-  // 画像を別タブで開く
-  const openInNewTab = (dataUrl: string) => {
-    window.open(dataUrl, '_blank');
+  // 画像プレビューモーダルを開く
+  const openImageModal = () => {
+    setShowModal(true);
   };
+
+  // モーダルを閉じる
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+  }, []);
+
+  // Escキーでモーダルを閉じる
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    if (showModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showModal, closeModal]);
 
   // LGTM生成実行
   const handleGenerate = async () => {
@@ -170,12 +178,6 @@ export default function HomePage() {
               ref={fileInputRef}
               type="file"
             />
-            {selectedFile && (
-              <p className="text-muted-foreground text-sm">
-                選択中: {selectedFile.name} (
-                {(selectedFile.size / 1024).toFixed(1)}KB)
-              </p>
-            )}
           </div>
 
           {/* URL入力 */}
@@ -216,44 +218,35 @@ export default function HomePage() {
         <Card>
           <CardHeader>
             <CardTitle>生成結果</CardTitle>
-            <CardDescription>
-              生成日時:{' '}
-              {new Date(generatedImage.meta.generatedAt).toLocaleString(
-                'ja-JP'
-              )}{' '}
-              | サイズ: {(generatedImage.meta.bytes / 1024).toFixed(1)}KB
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* プレビュー画像 */}
-            <div className="overflow-hidden rounded-lg border">
+            <button
+              className="w-full cursor-pointer overflow-hidden rounded-lg border-0 bg-transparent p-0"
+              onClick={openImageModal}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openImageModal();
+                }
+              }}
+              type="button"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 alt="Generated LGTM"
-                className="h-auto w-full"
+                className="h-auto w-full transition-transform duration-200 hover:scale-105"
                 src={generatedImage.imageUrl}
               />
-            </div>
+            </button>
 
             {/* アクションボタン */}
             <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => downloadImage(generatedImage.imageUrl)}
-                variant="outline"
-              >
-                再ダウンロード
-              </Button>
               <Button
                 onClick={() => copyMarkdown(generatedImage.markdown)}
                 variant="outline"
               >
                 Markdownコピー
-              </Button>
-              <Button
-                onClick={() => openInNewTab(generatedImage.imageUrl)}
-                variant="outline"
-              >
-                画像を開く
               </Button>
             </div>
 
@@ -266,6 +259,39 @@ export default function HomePage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* 画像拡大モーダル */}
+      {showModal && generatedImage && (
+        // biome-ignore lint/nursery/noNoninteractiveElementInteractions: モーダル背景クリックで閉じる機能が必要
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={closeModal}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              closeModal();
+            }
+          }}
+          role="dialog"
+          tabIndex={-1}
+        >
+          <div className="relative max-h-full max-w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="Generated LGTM - Full Size"
+              className="max-h-full max-w-full object-contain"
+              src={generatedImage.imageUrl}
+            />
+            <button
+              className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+              onClick={closeModal}
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
