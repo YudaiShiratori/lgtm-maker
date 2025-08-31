@@ -1,6 +1,5 @@
 # LGTM Maker
 
-日本語 | [English](./README.en.md) | [Tiếng Việt](./README.vi.md)
 
 ## 概要
 
@@ -547,14 +546,3 @@ Dependabotにもこれらの秘密情報へのアクセスを許可するには:
 
 詳細な使い方については、[Claude Code公式ドキュメント](https://docs.anthropic.com/en/docs/claude-code/overview)を参照してください。
 
-## コントリビューション
-
-プルリクエストや Issue の作成を歓迎します。
-
-### 開発の流れ
-
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add some amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
