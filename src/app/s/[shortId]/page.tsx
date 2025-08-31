@@ -2,9 +2,9 @@ import { redirect } from 'next/navigation';
 import { api } from '~/trpc/server';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     shortId: string;
-  };
+  }>;
 }
 
 export default async function ShortUrlPage({ params }: PageProps) {
