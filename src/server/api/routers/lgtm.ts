@@ -10,7 +10,7 @@ const generateInput = z
     url: z.string().url().optional(),
   })
   .refine((v) => !!v.fileBase64 || !!v.url, {
-    message: '画像ファイルまたはURLを指定してください',
+    message: '画像ファイルを指定してください',
   });
 
 export type GenerateResult = {

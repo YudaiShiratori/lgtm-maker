@@ -78,7 +78,9 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(markdown);
     } catch (_error) {
-      // Silent fail for clipboard copy
+      toast.info(
+        'クリップボードにアクセスできません。下のMarkdownを手動でコピーしてください。'
+      );
     }
   };
 
@@ -115,6 +117,12 @@ export default function HomePage() {
 
     try {
       const fileBase64 = await fileToBase64(selectedFile);
+      if (!fileBase64) {
+        toast.error(
+          'ファイルの読み込みに失敗しました。別の画像でお試しください。'
+        );
+        return;
+      }
       const fileName = selectedFile.name;
 
       await generateMutation.mutateAsync({
@@ -135,7 +143,7 @@ export default function HomePage() {
     }
   };
 
-  const isValid = selectedFile;
+  const isValid = Boolean(selectedFile);
   const isLoading = generateMutation.isPending;
 
   return (
@@ -251,7 +259,13 @@ export default function HomePage() {
           role="dialog"
           tabIndex={-1}
         >
-          <div className="relative max-h-full max-w-full">
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content container needs click handler to prevent closing */}
+          {/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: Modal content container needs click handler to prevent closing */}
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content container click is for event bubbling prevention only */}
+          <div
+            className="relative max-h-full max-w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               alt="Generated LGTM - Full Size"
@@ -259,6 +273,7 @@ export default function HomePage() {
               src={generatedImage.imageUrl}
             />
             <button
+              aria-label="モーダルを閉じる"
               className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               onClick={closeModal}
               type="button"
