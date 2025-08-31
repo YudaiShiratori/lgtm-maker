@@ -1,14 +1,20 @@
-# Sun* Next.js Dev Template
+# LGTM Maker
 
-日本語 | [English](./README.en.md) | [Tiếng Việt](./README.vi.md)
+## 概要
 
-## What is this?
+LGTM Makerは、画像に「LGTM」テキストを合成し、Markdownで共有できるWebアプリケーションです。コードレビューやプルリクエストで使用する画像を簡単に作成できます。
 
-このリポジトリは、Next.js(TypeScript)で型安全なフルスタック開発を行うためのテンプレートです。
-[T3 Stack](https://create.t3.gg/)をベースに、CursorのRulesファイルなどを追加しています。
-HEART Devの案件などでも実際に活用されています。
+[T3 Stack](https://create.t3.gg/)をベースに、Claude Code対応などを追加した型安全なフルスタック開発環境で構築されています。
 
-## Features
+## 主な機能
+
+- 画像アップロード・URL指定による画像読み込み
+- 画像に「LGTM」テキストを自動合成
+- 短縮URL生成とMarkdown形式での出力
+- 生成時の自動ダウンロードとクリップボードコピー
+- 生成画像のプレビュー表示
+
+## Tech Stack
 
 ### プリインストールされたTech Stack
 
@@ -48,16 +54,80 @@ HEART Devの案件などでも実際に活用されています。
   - Chromium、Firefox、Safariでの並列実ブラウザテスト
   - 強力なデバッグツールとCI/CD統合
   
-- **[Shadcn/UI](https://ui.shadcn.com)** - カスタマイズ可能UIコンポーネント
+- **[shadcn/ui](https://ui.shadcn.com)** - カスタマイズ可能UIコンポーネント
   - Copy & Paste方式で完全にカスタマイズ可能
   - Radix UI基盤でアクセシビリティ対応とTailwind CSS統合
 
+### LGTM Maker固有の技術
+- **[@resvg/resvg-js](https://github.com/yisibl/resvg-js)** - SVGからPNG変換
+- **短縮URL生成機能** - メモリベースの高速URL短縮システム
+
 **アーキテクチャの特徴**: TypeScript + Next.js + tRPCによるフルスタック型安全性、高速開発ツールチェーン、包括的テスト環境
 
-### ディレクトリ構造
+## セットアップ
 
+### bunをインストール
+
+```bash
+curl -fsSL https://bun.sh/install | bash
 ```
-nextjs-dev-template/
+
+詳しくは[公式サイト](https://bun.sh/docs/installation)を参照してください。
+
+### リポジトリのクローン
+
+```bash
+git clone {このリポジトリのURL}
+```
+
+### リモートリポジトリの設定
+
+```bash
+git remote set-url origin {利用するリモートリポジトリのURL}
+```
+
+### パッケージのインストール
+
+```bash
+bun install
+```
+
+### Playwrightのブラウザインストール
+
+```bash
+bunx playwright install
+```
+
+### lefthookの設定
+
+```bash
+bunx lefthook install
+```
+
+### 開発サーバーの起動
+
+```bash
+bun run dev
+```
+
+## 使用方法
+
+1. **画像の選択**
+   - ファイルアップロード: ローカルの画像ファイルをアップロード
+   - URL指定: インターネット上の画像URLを入力
+
+2. **LGTM画像の生成**
+   - 「作る」ボタンをクリックして画像を生成
+   - 自動的にMarkdownがクリップボードにコピーされます
+
+3. **共有**
+   - 生成されたMarkdownをGitHub等に貼り付けて使用
+   - 画像をクリックすると拡大表示されます
+
+## ディレクトリ構造
+
+```text
+lgtm-maker/
 ├── __tests__/            # ユニットテストファイル
 ├── .github/              # GitHub関連設定
 │   ├── workflows/        # GitHub Actions CI/CD設定
@@ -70,12 +140,15 @@ nextjs-dev-template/
 │   ├── app/              # Next.js App Router
 │   │   ├── _components/  # アプリケーション固有のコンポーネント
 │   │   ├── api/          # APIルート定義
+│   │   ├── s/[shortId]/  # 短縮URL展開ページ
 │   │   └── ...           # 各ページのルート
 │   ├── components/       # 再利用可能なUIコンポーネント
 │   │   └── ui/           # Shadcn/UIコンポーネント
 │   ├── lib/              # ユーティリティ関数
 │   ├── server/           # サーバーサイドロジック
-│   │   └── api/          # tRPC API定義
+│   │   ├── api/          # tRPC API定義
+│   │   ├── lgtm/         # LGTM画像生成ロジック
+│   │   └── lib/          # サーバーユーティリティ
 │   ├── styles/           # グローバルスタイル
 │   └── trpc/             # tRPC設定
 ├── .env.example          # 環境変数の例
@@ -88,6 +161,39 @@ nextjs-dev-template/
 ├── tsconfig.json         # TypeScript設定
 └── vitest.config.ts      # Vitest設定
 ```
+
+## API エンドポイント
+
+### `/api/trpc/lgtm.generate`
+
+LGTM画像を生成します。
+
+**入力**:
+```typescript
+{
+  fileBase64?: string; // Base64エンコードされた画像データ
+  fileName?: string;   // ファイル名（オプション）
+  url?: string;        // 画像URL（オプション）
+}
+```
+
+**出力**:
+```typescript
+{
+  imageUrl: string;    // Data URL形式の生成画像
+  shortUrl: string;    // 短縮URL
+  markdown: string;    // Markdownフォーマット
+  meta: {
+    shortId: string;   // 短縮ID
+  };
+}
+```
+
+### `/s/[shortId]`
+
+短縮URLから元の画像にリダイレクトします。
+
+**注意**: 現在の実装はメモリベースのため、サーバー再起動時に短縮URLが失効します。
 
 ## 主要設定ファイルの詳細
 
@@ -150,55 +256,40 @@ Git操作時に自動実行されるスクリプトを設定しています：
 - GitHub Actionsの更新を毎週チェック
 - 更新PRは同時に最大10件まで
 
-## Usage
+## 開発ガイド
 
-### bunをインストール
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-詳しくは[公式サイト](https://bun.sh/docs/installation)を参照してください。
-
-### リポジトリのクローン
+### 開発コマンド
 
 ```bash
-git clone {このリポジトリのURL}
-```
+# 開発サーバー起動
+bun run dev
 
-### リモートリポジトリの設定
+# プロダクションビルド
+bun run build
 
-```bash
-git remote set-url origin {利用するリモートリポジトリのURL}
-```
+# プロダクションサーバー起動
+bun run start
 
-### パッケージのインストール
+# コード品質チェック
+bun run check
 
-```bash
-bun install
-```
+# 自動フォーマット
+bun run check:write
 
-### Playwrightのブラウザインストール
+# 型チェック
+bun run typecheck
 
-```bash
+# ユニットテスト実行
+bun run test
+
+# E2Eテスト実行
+bun run test:e2e
+
+# Playwrightブラウザインストール
 bunx playwright install
 ```
 
-### lefthookの設定
-
-```bash
-bunx lefthook install
-```
-
-### 開発サーバーの起動
-
-```bash
-bun run dev
-```
-
-## 開発ガイド
-
-### コンポーネント追加（Shadcn/UI）
+### コンポーネント追加（shadcn/ui）
 
 UIコンポーネントを追加する場合は、shadcn/uiを使用します：
 
@@ -220,372 +311,7 @@ src/app/dashboard/page.tsx
 
 ### APIエンドポイントの追加（tRPC）
 
-tRPCを使用することで、型安全なバックエンドAPIを構築できます。以下に詳細な開発方法を説明します。
-
-#### 基本概念
-
-##### Router（ルーター）
-- API エンドポイントのグループを定義
-- 関連するプロシージャをまとめて管理
-- モジュール化により保守性を向上
-
-##### Procedure（プロシージャ）
-- 個別のAPI操作を定義（クエリまたはミューテーション）
-- **Query**: データの取得操作（GET相当）
-- **Mutation**: データの変更操作（POST/PUT/DELETE相当）
-
-##### Context（コンテキスト）
-- 各プロシージャで利用可能な共通データ
-- 認証情報、データベース接続などを含む
-
-##### Middleware（ミドルウェア）
-- プロシージャの実行前後に処理を挟む
-- 認証、ログ出力、バリデーションなどに使用
-
-#### ディレクトリ構造と役割
-
-```
-src/
-├── server/
-│   └── api/
-│       ├── root.ts          # 全ルーターの統合
-│       ├── trpc.ts          # tRPCの基本設定
-│       └── routers/         # 個別のルーター定義
-│           ├── user.ts      # ユーザー関連API
-│           ├── post.ts      # 投稿関連API
-│           └── auth.ts      # 認証関連API
-└── trpc/
-    ├── react.tsx           # React用tRPCクライアント設定
-    └── server.ts           # サーバー用tRPC設定
-```
-
-#### 新しいルーターの作成
-
-1. **ルーターファイルの作成**
-
-```typescript
-// src/server/api/routers/user.ts
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-
-export const userRouter = createTRPCRouter({
-  // パブリックなクエリ（認証不要）
-  getById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ input, ctx }) => {
-      // データベースからユーザーを取得
-      const user = await ctx.db.user.findUnique({
-        where: { id: input.id },
-      });
-      
-      if (!user) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
-        });
-      }
-      
-      return user;
-    }),
-
-  // 全ユーザー一覧取得（ページネーション付き）
-  getAll: publicProcedure
-    .input(z.object({
-      page: z.number().min(1).default(1),
-      limit: z.number().min(1).max(100).default(10),
-    }))
-    .query(async ({ input, ctx }) => {
-      const { page, limit } = input;
-      const skip = (page - 1) * limit;
-      
-      const [users, total] = await Promise.all([
-        ctx.db.user.findMany({
-          skip,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        ctx.db.user.count(),
-      ]);
-      
-      return {
-        users,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      };
-    }),
-
-  // 保護されたミューテーション（認証必要）
-  update: protectedProcedure
-    .input(z.object({
-      id: z.string(),
-      name: z.string().optional(),
-      email: z.string().email().optional(),
-    }))
-    .mutation(async ({ input, ctx }) => {
-      // 認証されたユーザーのみが自分の情報を更新可能
-      if (ctx.session.user.id !== input.id) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Cannot update other user\'s data',
-        });
-      }
-      
-      const updatedUser = await ctx.db.user.update({
-        where: { id: input.id },
-        data: {
-          name: input.name,
-          email: input.email,
-        },
-      });
-      
-      return updatedUser;
-    }),
-
-  // ユーザー削除
-  delete: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      // 管理者権限チェック（例）
-      if (ctx.session.user.role !== 'ADMIN') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Admin role required',
-        });
-      }
-      
-      await ctx.db.user.delete({
-        where: { id: input.id },
-      });
-      
-      return { success: true };
-    }),
-});
-```
-
-2. **root.tsにルーターを登録**
-
-```typescript
-// src/server/api/root.ts
-import { createTRPCRouter } from "./trpc";
-import { postRouter } from "./routers/post";
-import { userRouter } from "./routers/user";  // 追加
-
-export const appRouter = createTRPCRouter({
-  post: postRouter,
-  user: userRouter,  // 追加
-});
-
-export type AppRouter = typeof appRouter;
-```
-
-#### 認証とミドルウェア
-
-**protectedProcedure の実装例:**
-
-```typescript
-// src/server/api/trpc.ts
-import { TRPCError, initTRPC } from "@trpc/server";
-import { getServerAuthSession } from "../auth";
-
-const t = initTRPC.context<Context>().create();
-
-// 認証チェックミドルウェア
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  return next({
-    ctx: {
-      // session が存在することを保証
-      session: { ...ctx.session, user: ctx.session.user },
-    },
-  });
-});
-
-// ロギングミドルウェア
-const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
-  const start = Date.now();
-  const result = await next();
-  const duration = Date.now() - start;
-  console.log(`${type.toUpperCase()} ${path} - ${duration}ms`);
-  return result;
-});
-
-export const publicProcedure = t.procedure.use(loggerMiddleware);
-export const protectedProcedure = t.procedure
-  .use(loggerMiddleware)
-  .use(enforceUserIsAuthed);
-```
-
-#### クライアント側での使用方法
-
-**クエリの使用:**
-
-```typescript
-// pages/users/[id].tsx
-import { api } from "~/trpc/react";
-
-export default function UserPage({ userId }: { userId: string }) {
-  // ユーザー情報を取得
-  const { data: user, isLoading, error } = api.user.getById.useQuery({
-    id: userId,
-  });
-
-  // ユーザー一覧を取得（ページネーション）
-  const { data: usersData } = api.user.getAll.useQuery({
-    page: 1,
-    limit: 10,
-  });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-
-  return (
-    <div>
-      <h1>{user?.name}</h1>
-      <p>{user?.email}</p>
-    </div>
-  );
-}
-```
-
-**ミューテーションの使用:**
-
-```typescript
-// components/UserUpdateForm.tsx
-import { api } from "~/trpc/react";
-
-export default function UserUpdateForm({ userId }: { userId: string }) {
-  const utils = api.useUtils();
-  
-  const updateUser = api.user.update.useMutation({
-    onSuccess: () => {
-      // キャッシュを無効化して最新データを取得
-      utils.user.getById.invalidate({ id: userId });
-      alert('User updated successfully!');
-    },
-    onError: (error) => {
-      alert(`Error: ${error.message}`);
-    },
-  });
-
-  const handleSubmit = (data: { name: string; email: string }) => {
-    updateUser.mutate({
-      id: userId,
-      ...data,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* フォームの実装 */}
-      <button 
-        type="submit" 
-        disabled={updateUser.isPending}
-      >
-        {updateUser.isPending ? 'Updating...' : 'Update User'}
-      </button>
-    </form>
-  );
-}
-```
-
-#### エラーハンドリング
-
-**サーバー側でのエラー定義:**
-
-```typescript
-import { TRPCError } from "@trpc/server";
-
-// カスタムエラーの投げ方
-throw new TRPCError({
-  code: 'BAD_REQUEST',
-  message: 'Invalid input data',
-  cause: validationError, // 元のエラーオブジェクト
-});
-
-// 利用可能なエラーコード:
-// - BAD_REQUEST (400)
-// - UNAUTHORIZED (401)
-// - FORBIDDEN (403)
-// - NOT_FOUND (404)
-// - METHOD_NOT_SUPPORTED (405)
-// - TIMEOUT (408)
-// - CONFLICT (409)
-// - PRECONDITION_FAILED (412)
-// - PAYLOAD_TOO_LARGE (413)
-// - UNPROCESSABLE_CONTENT (422)
-// - TOO_MANY_REQUESTS (429)
-// - CLIENT_CLOSED_REQUEST (499)
-// - INTERNAL_SERVER_ERROR (500)
-```
-
-**クライアント側でのエラーハンドリング:**
-
-```typescript
-const { data, error } = api.user.getById.useQuery({ id: "123" });
-
-if (error) {
-  // エラーコードに応じた処理
-  switch (error.data?.code) {
-    case 'NOT_FOUND':
-      return <div>User not found</div>;
-    case 'UNAUTHORIZED':
-      return <div>Please log in</div>;
-    default:
-      return <div>An error occurred: {error.message}</div>;
-  }
-}
-```
-
-#### バリデーション
-
-**Zodスキーマを使用した入力検証:**
-
-```typescript
-// 共通スキーマの定義
-const CreateUserSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  email: z.string().email("Invalid email format"),
-  age: z.number().min(0).max(150).optional(),
-  role: z.enum(['USER', 'ADMIN']).default('USER'),
-});
-
-// プロシージャでの使用
-createUser: protectedProcedure
-  .input(CreateUserSchema)
-  .mutation(async ({ input, ctx }) => {
-    // input は自動的に型安全になる
-    const user = await ctx.db.user.create({
-      data: input,
-    });
-    return user;
-  }),
-```
-
-#### ベストプラクティス
-
-1. **ルーターの分割**: 機能ごとにルーターを分けて管理
-2. **入力検証**: Zodスキーマによる厳密な型定義
-3. **エラーハンドリング**: 適切なHTTPステータスコードとメッセージ
-4. **認証・認可**: ミドルウェアによる一元管理
-5. **キャッシュ制御**: クライアント側でのデータキャッシュ戦略
-6. **パフォーマンス**: ページネーション、フィルタリングの実装
-7. **テスト**: tRPCプロシージャの単体テスト
-
-#### トラブルシューティング
-
-**型エラーが発生する場合:**
-- `src/server/api/root.ts` で型をエクスポートしているか確認
-- `src/trpc/react.tsx` でクライアント設定が正しいか確認
-
-**認証エラーが発生する場合:**
-- セッション設定が正しく行われているか確認
-- `protectedProcedure` のミドルウェア実装を確認
-
-この方法でtRPCを使用することで、型安全でスケーラブルなバックエンドAPIを構築できます。
+tRPCを使用することで、型安全なバックエンドAPIを構築できます。詳細な開発方法については、CLAUDE.mdの詳細な説明を参照してください。
 
 ### テスト
 
@@ -663,7 +389,7 @@ Dependabotにもこれらの秘密情報へのアクセスを許可するには:
 
 ## Claude Code対応
 
-このテンプレートは[Claude Code](https://claude.ai/code)に対応しています。Claude Codeは、Anthropic社が開発したAIコーディングアシスタントで、コマンドラインから直接利用できます。
+このプロジェクトは[Claude Code](https://claude.ai/code)に対応しています。Claude Codeは、Anthropic社が開発したAIコーディングアシスタントで、コマンドラインから直接利用できます。
 
 ### Claude Codeの設定
 
@@ -708,25 +434,9 @@ Dependabotにもこれらの秘密情報へのアクセスを許可するには:
    ```
    このコマンドでプロジェクト用のCLAUDE.mdファイルが自動生成されます。
 
-### ディレクトリ構造をClaude Codeに追加する方法
-
-プロジェクトのセットアップが完了した後、以下のプロンプトをClaude Codeで実行してください：
-
-```
-プロジェクトのディレクトリ構造を分析し、CLAUDE.mdファイルの「Project Structure」セクションを現在の実際のディレクトリ構造で更新してください。以下の要件に従ってください：
-
-1. 実際のファイルとディレクトリを確認して、正確な構造を記載する
-2. 主要なファイルの役割と目的を簡潔に説明する
-3. 開発者が理解しやすいように、論理的なグループ分けを行う
-4. テストファイル、設定ファイル、ドキュメントファイルも含める
-5. 自動生成されるファイル（.next/, node_modules/等）は除外する
-
-更新後、docs/directory-structure.mdファイルも同様に更新してください。
-```
-
 ### 利用可能なカスタムコマンド
 
-このテンプレートには、開発効率を向上させるカスタムコマンドが含まれています：
+このプロジェクトには、開発効率を向上させるカスタムコマンドが含まれています：
 
 #### 核となるワークフローコマンド（5つ）
 
@@ -780,7 +490,7 @@ Dependabotにもこれらの秘密情報へのアクセスを許可するには:
 
 ### GitHubテンプレート
 
-このテンプレートには、構造化されたIssueとPR作成のためのテンプレートファイルが含まれています：
+このプロジェクトには、構造化されたIssueとPR作成のためのテンプレートファイルが含まれています：
 
 #### Issueテンプレート（`.github/ISSUE_TEMPLATE/`）
 - **`bug_report.yml`** - バグレポート用の詳細なテンプレート
@@ -835,12 +545,3 @@ Dependabotにもこれらの秘密情報へのアクセスを許可するには:
 8. **完了**: コードマージとクリーンアップ
 
 詳細な使い方については、[Claude Code公式ドキュメント](https://docs.anthropic.com/en/docs/claude-code/overview)を参照してください。
-
-## Maintainer
-
-このリポジトリの管理は以下のメンバーを中心に行っています。何かあればお気軽にSlack等でお声がけください。
-
-- Kazuma Endo
-
-
-
