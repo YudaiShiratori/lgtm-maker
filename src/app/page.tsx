@@ -18,6 +18,7 @@ interface GeneratedImage {
   imageUrl: string;
   shortUrl: string;
   markdown: string;
+  markdownWithDataUrl: string;
   meta: {
     bytes: number;
     generatedAt: string;
@@ -36,8 +37,8 @@ export default function HomePage() {
   const generateMutation = api.lgtm.generate.useMutation({
     onSuccess: (data) => {
       setGeneratedImage(data);
-      // 自動ダウンロード
-      downloadImage(data.imageUrl);
+      // 自動ダウンロード（ファイル名にshortIdを反映）
+      downloadImage(data.imageUrl, `lgtm-${data.meta.shortId}.png`);
       // Markdown自動コピー
       copyMarkdown(data.markdown);
       toast.success(
@@ -78,10 +79,10 @@ export default function HomePage() {
   };
 
   // 自動ダウンロード
-  const downloadImage = (dataUrl: string) => {
+  const downloadImage = (dataUrl: string, fileName?: string) => {
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `lgtm-${Date.now()}.png`;
+    link.download = fileName ?? `lgtm-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -98,7 +99,10 @@ export default function HomePage() {
 
   // 画像を別タブで開く
   const openInNewTab = (url: string) => {
-    window.open(url, '_blank');
+    const w = window.open(url, '_blank', 'noopener,noreferrer');
+    if (w) {
+      w.opener = null;
+    }
   };
 
   // LGTM生成実行
@@ -241,7 +245,12 @@ export default function HomePage() {
             {/* アクションボタン */}
             <div className="flex flex-wrap gap-2">
               <Button
-                onClick={() => downloadImage(generatedImage.imageUrl)}
+                onClick={() =>
+                  downloadImage(
+                    generatedImage.imageUrl,
+                    `lgtm-${generatedImage.meta.shortId}.png`
+                  )
+                }
                 variant="outline"
               >
                 再ダウンロード
@@ -267,19 +276,39 @@ export default function HomePage() {
             </div>
 
             {/* Markdown表示 */}
-            <div className="space-y-2">
-              <Label>Markdown</Label>
-              <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
-                {generatedImage.markdown}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Markdown（短縮URL）</Label>
+                <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
+                  {generatedImage.markdown}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => copyMarkdown(generatedImage.markdown)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    短縮URL版をコピー
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => copyMarkdown(generatedImage.markdown)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Markdownをコピー
-                </Button>
+
+              <div className="space-y-2">
+                <Label>Markdown（元画像データ）</Label>
+                <div className="max-h-32 overflow-y-auto break-all rounded-md bg-muted p-3 font-mono text-sm">
+                  {generatedImage.markdownWithDataUrl}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() =>
+                      copyMarkdown(generatedImage.markdownWithDataUrl)
+                    }
+                    size="sm"
+                    variant="outline"
+                  >
+                    データURL版をコピー
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>

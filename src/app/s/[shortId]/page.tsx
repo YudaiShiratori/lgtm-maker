@@ -52,8 +52,7 @@ export default async function ShortUrlPage({ params }: PageProps) {
         <div className="text-center">
           <h1 className="mb-2 font-bold text-2xl">短縮URLが見つかりません</h1>
           <p className="mb-4 text-muted-foreground">
-            指定された短縮URL (/s/{params.shortId})
-            は存在しないか、期限切れです。
+            指定された短縮URL (/s/{params.shortId}) は存在しないか、無効です。
           </p>
           <a
             className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"

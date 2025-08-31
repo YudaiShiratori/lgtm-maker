@@ -19,30 +19,37 @@ export interface ShortenResult {
 }
 
 export function shortenUrl(url: string): ShortenResult {
+  const trimmedUrl = url.trim();
   // 既に短縮済みかチェック
-  const existingShortId = shortIdStore.get(url);
+  const existingShortId = shortIdStore.get(trimmedUrl);
   if (existingShortId) {
     return {
       shortId: existingShortId,
       shortUrl: `/s/${existingShortId}`,
-      originalUrl: url,
+      originalUrl: trimmedUrl,
     };
   }
 
   // 新しい短縮IDを生成
-  let shortId: string;
-  do {
+  let shortId = '';
+  for (let i = 0; i < 10_000; i++) {
     shortId = generateShortId();
-  } while (urlStore.has(shortId));
+    if (!urlStore.has(shortId)) {
+      break;
+    }
+  }
+  if (!shortId || urlStore.has(shortId)) {
+    throw new Error('短縮IDの生成に失敗しました');
+  }
 
   // ストレージに保存
-  urlStore.set(shortId, url);
-  shortIdStore.set(url, shortId);
+  urlStore.set(shortId, trimmedUrl);
+  shortIdStore.set(trimmedUrl, shortId);
 
   return {
     shortId,
     shortUrl: `/s/${shortId}`,
-    originalUrl: url,
+    originalUrl: trimmedUrl,
   };
 }
 
