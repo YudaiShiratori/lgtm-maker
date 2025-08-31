@@ -2,12 +2,13 @@ import '~/styles/globals.css';
 
 import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
+import { Toaster } from '~/components/ui/sonner';
 
 import { TRPCReactProvider } from '~/trpc/react';
 
 export const metadata: Metadata = {
-  title: 'Next.js App',
-  description: 'Next.js App',
+  title: 'LGTM Maker',
+  description: '画像をアップロードしてLGTM画像を生成するツール',
   icons: [{ rel: 'icon', url: '/favicon.ico' }],
 };
 
@@ -24,7 +25,10 @@ export default function RootLayout({
   return (
     <html className={`${notoSansJP.variable}`} lang="ja">
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          {children}
+          <Toaster />
+        </TRPCReactProvider>
       </body>
     </html>
   );

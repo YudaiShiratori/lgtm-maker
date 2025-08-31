@@ -23,6 +23,9 @@
             "functions": ["clsx", "cva", "cn"]
           }
         }
+      },
+      "performance": {
+        "noImgElement": "off"
       }
     }
   }

@@ -3,6 +3,3 @@ pre-commit:
     check:
       run: ./node_modules/.bin/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
-    typecheck:
-      run: ./node_modules/.bin/tsc --noEmit {staged_files}
-      glob: "*.{ts,tsx}"
