@@ -18,7 +18,6 @@ interface GeneratedImage {
   imageUrl: string;
   shortUrl: string;
   markdown: string;
-  markdownWithDataUrl: string;
   meta: {
     bytes: number;
     generatedAt: string;
@@ -268,39 +267,19 @@ export default function HomePage() {
             </div>
 
             {/* Markdown表示 */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Markdown（短縮URL）</Label>
-                <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
-                  {generatedImage.markdown}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => copyMarkdown(generatedImage.markdown)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    短縮URL版をコピー
-                  </Button>
-                </div>
+            <div className="space-y-2">
+              <Label>Markdown</Label>
+              <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
+                {generatedImage.markdown}
               </div>
-
-              <div className="space-y-2">
-                <Label>Markdown（元画像データ）</Label>
-                <div className="max-h-32 overflow-y-auto break-all rounded-md bg-muted p-3 font-mono text-sm">
-                  {generatedImage.markdownWithDataUrl}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() =>
-                      copyMarkdown(generatedImage.markdownWithDataUrl)
-                    }
-                    size="sm"
-                    variant="outline"
-                  >
-                    データURL版をコピー
-                  </Button>
-                </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => copyMarkdown(generatedImage.markdown)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Markdownをコピー
+                </Button>
               </div>
             </div>
           </CardContent>

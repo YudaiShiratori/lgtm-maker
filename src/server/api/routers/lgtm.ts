@@ -17,7 +17,6 @@ export type GenerateResult = {
   imageUrl: string; // data:image/png;base64,...
   shortUrl: string; // "/s/abc123"
   markdown: string; // "![LGTM](shortUrl)"
-  markdownWithDataUrl: string; // "![LGTM](imageUrl)"
   meta: {
     bytes: number;
     generatedAt: string;
@@ -39,7 +38,6 @@ export const lgtmRouter = createTRPCRouter({
           imageUrl: result.imageUrl,
           shortUrl: shortResult.shortUrl,
           markdown: `![LGTM](${shortResult.shortUrl})`,
-          markdownWithDataUrl: result.markdown, // 元のData URL版
           meta: {
             bytes: result.meta.bytes,
             generatedAt: result.meta.generatedAt,
