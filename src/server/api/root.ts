@@ -1,5 +1,6 @@
 import { lgtmRouter } from '~/server/api/routers/lgtm';
 import { postRouter } from '~/server/api/routers/post';
+import { shortenerRouter } from '~/server/api/routers/shortener';
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 
 /**
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 export const appRouter = createTRPCRouter({
   post: postRouter,
   lgtm: lgtmRouter,
+  shortener: shortenerRouter,
 });
 
 // export type definition of API

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { generateLgtmImage } from '~/server/lgtm/composite';
+import { shortenUrl } from '~/server/lib/shortener';
 
 const generateInput = z
   .object({
@@ -14,10 +15,13 @@ const generateInput = z
 
 export type GenerateResult = {
   imageUrl: string; // data:image/png;base64,...
-  markdown: string; // "![LGTM](imageUrl)"
+  shortUrl: string; // "/s/abc123"
+  markdown: string; // "![LGTM](shortUrl)"
+  markdownWithDataUrl: string; // "![LGTM](imageUrl)"
   meta: {
     bytes: number;
     generatedAt: string;
+    shortId: string;
   };
 };
 
@@ -27,7 +31,21 @@ export const lgtmRouter = createTRPCRouter({
     .mutation(async ({ input }): Promise<GenerateResult> => {
       try {
         const result = await generateLgtmImage(input);
-        return result;
+
+        // 短縮URL生成
+        const shortResult = shortenUrl(result.imageUrl);
+
+        return {
+          imageUrl: result.imageUrl,
+          shortUrl: shortResult.shortUrl,
+          markdown: `![LGTM](${shortResult.shortUrl})`,
+          markdownWithDataUrl: result.markdown, // 元のData URL版
+          meta: {
+            bytes: result.meta.bytes,
+            generatedAt: result.meta.generatedAt,
+            shortId: shortResult.shortId,
+          },
+        };
       } catch (error) {
         // エラーメッセージを分かりやすく変換
         let errorMessage = 'LGTM画像の生成に失敗しました';
