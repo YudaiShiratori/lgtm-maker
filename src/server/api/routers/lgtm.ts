@@ -34,11 +34,12 @@ export const lgtmRouter = createTRPCRouter({
 
         // 絶対URLを構築
         const headers = ctx.req?.headers;
-        const host = headers?.host || 'localhost:3000';
-        const protocol =
-          headers?.['x-forwarded-proto'] ||
-          (host.includes('localhost') ? 'http' : 'https');
-        const absoluteShortUrl = `${protocol}://${host}${shortResult.shortUrl}`;
+        const baseUrl =
+          process.env.BASE_URL ||
+          (headers?.host
+            ? `${headers?.['x-forwarded-proto'] || (headers.host.includes('localhost') ? 'http' : 'https')}://${headers.host}`
+            : 'http://localhost:3000');
+        const absoluteShortUrl = `${baseUrl}${shortResult.shortUrl}`;
 
         return {
           imageUrl: result.imageUrl,
