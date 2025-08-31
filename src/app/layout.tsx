@@ -9,7 +9,15 @@ import { TRPCReactProvider } from '~/trpc/react';
 export const metadata: Metadata = {
   title: 'LGTM Maker',
   description: '画像をアップロードしてLGTM画像を生成するツール',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+  icons: [
+    { rel: 'icon', url: '/favicon.ico' },
+    {
+      rel: 'icon',
+      url: '/favicon-32x32.png',
+      sizes: '32x32',
+      type: 'image/png',
+    },
+  ],
 };
 
 const notoSansJP = Noto_Sans_JP({
@@ -24,7 +32,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html className={`${notoSansJP.variable}`} lang="ja">
-      <body>
+      <body className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <TRPCReactProvider>
           {children}
           <Toaster />

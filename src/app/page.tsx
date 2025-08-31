@@ -148,141 +148,151 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-8 text-center">
-        <h1 className="mb-2 font-bold text-4xl">LGTM Maker</h1>
-        <p className="text-muted-foreground">
-          画像をアップロードして、LGTM画像を生成します
-        </p>
-      </div>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>画像を選択</CardTitle>
-          <CardDescription>
-            画像ファイルをアップロードしてください
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* ファイルアップロード */}
-          <div className="space-y-2">
-            <Label htmlFor="file">ファイルアップロード</Label>
-            <Input
-              accept="image/*"
-              disabled={isLoading}
-              id="file"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              type="file"
+      <div className="rounded-2xl border border-white/20 bg-white/70 p-8 shadow-xl backdrop-blur-sm">
+        <div className="mb-8 text-center">
+          <div className="mb-4 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="LGTM Maker Logo"
+              className="h-20 w-auto"
+              src="/lgtm-logo.png"
             />
           </div>
+          <h1 className="mb-2 font-bold text-4xl">LGTM Maker</h1>
+          <p className="text-muted-foreground">
+            画像をアップロードして、LGTM画像を生成します
+          </p>
+        </div>
 
-          {/* ボタン */}
-          <div className="flex gap-2">
-            <Button
-              className="flex-1"
-              disabled={!isValid || isLoading}
-              onClick={handleGenerate}
-            >
-              {isLoading ? '生成中...' : '作る'}
-            </Button>
-            <Button
-              disabled={isLoading}
-              onClick={handleClear}
-              variant="outline"
-            >
-              クリア
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* プレビュー */}
-      {generatedImage && (
-        <Card>
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>生成結果</CardTitle>
+            <CardTitle>画像を選択</CardTitle>
+            <CardDescription>
+              画像ファイルをアップロードしてください
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* プレビュー画像 */}
-            <button
-              className="w-full cursor-pointer overflow-hidden rounded-lg border-0 bg-transparent p-0"
-              onClick={openImageModal}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openImageModal();
-                }
-              }}
-              type="button"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                alt="Generated LGTM"
-                className="h-auto w-full"
-                src={generatedImage.imageUrl}
+          <CardContent className="space-y-6">
+            {/* ファイルアップロード */}
+            <div className="space-y-2">
+              <Label htmlFor="file">ファイルアップロード</Label>
+              <Input
+                accept="image/*"
+                disabled={isLoading}
+                id="file"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                type="file"
               />
-            </button>
-
-            {/* アクションボタン */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => copyMarkdown(generatedImage.markdown)}
-                variant="outline"
-              >
-                Markdownコピー
-              </Button>
             </div>
 
-            {/* Markdown表示 */}
-            <div className="space-y-2">
-              <Label>Markdown</Label>
-              <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
-                {generatedImage.markdown}
-              </div>
+            {/* ボタン */}
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                disabled={!isValid || isLoading}
+                onClick={handleGenerate}
+              >
+                {isLoading ? '生成中...' : '作る'}
+              </Button>
+              <Button
+                disabled={isLoading}
+                onClick={handleClear}
+                variant="outline"
+              >
+                クリア
+              </Button>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* 画像拡大モーダル */}
-      {showModal && generatedImage && (
-        // biome-ignore lint/nursery/noNoninteractiveElementInteractions: モーダル背景クリックで閉じる機能が必要
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={closeModal}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              closeModal();
-            }
-          }}
-          role="dialog"
-          tabIndex={-1}
-        >
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content container needs click handler to prevent closing */}
-          {/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: Modal content container needs click handler to prevent closing */}
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content container click is for event bubbling prevention only */}
+        {/* プレビュー */}
+        {generatedImage && (
+          <Card>
+            <CardHeader>
+              <CardTitle>生成結果</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* プレビュー画像 */}
+              <button
+                className="w-full cursor-pointer overflow-hidden rounded-lg border-0 bg-transparent p-0"
+                onClick={openImageModal}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openImageModal();
+                  }
+                }}
+                type="button"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt="Generated LGTM"
+                  className="h-auto w-full"
+                  src={generatedImage.imageUrl}
+                />
+              </button>
+
+              {/* アクションボタン */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => copyMarkdown(generatedImage.markdown)}
+                  variant="outline"
+                >
+                  Markdownコピー
+                </Button>
+              </div>
+
+              {/* Markdown表示 */}
+              <div className="space-y-2">
+                <Label>Markdown</Label>
+                <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
+                  {generatedImage.markdown}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 画像拡大モーダル */}
+        {showModal && generatedImage && (
+          // biome-ignore lint/nursery/noNoninteractiveElementInteractions: モーダル背景クリックで閉じる機能が必要
           <div
-            className="relative max-h-full max-w-full"
-            onClick={(e) => e.stopPropagation()}
+            aria-modal="true"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={closeModal}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                closeModal();
+              }
+            }}
+            role="dialog"
+            tabIndex={-1}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Generated LGTM - Full Size"
-              className="max-h-full max-w-full object-contain"
-              src={generatedImage.imageUrl}
-            />
-            <button
-              aria-label="モーダルを閉じる"
-              className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
-              onClick={closeModal}
-              type="button"
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content container needs click handler to prevent closing */}
+            {/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: Modal content container needs click handler to prevent closing */}
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content container click is for event bubbling prevention only */}
+            <div
+              className="relative max-h-full max-w-full"
+              onClick={(e) => e.stopPropagation()}
             >
-              ✕
-            </button>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt="Generated LGTM - Full Size"
+                className="max-h-full max-w-full object-contain"
+                src={generatedImage.imageUrl}
+              />
+              <button
+                aria-label="モーダルを閉じる"
+                className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                onClick={closeModal}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
