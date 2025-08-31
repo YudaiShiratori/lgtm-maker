@@ -25,7 +25,6 @@ interface GeneratedImage {
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
   const [generatedImage, setGeneratedImage] = useState<GeneratedImage | null>(
     null
   );
@@ -79,7 +78,9 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(markdown);
     } catch (_error) {
-      // Silent fail for clipboard copy
+      toast.info(
+        'クリップボードにアクセスできません。下のMarkdownを手動でコピーしてください。'
+      );
     }
   };
 
@@ -109,28 +110,24 @@ export default function HomePage() {
 
   // LGTM生成実行
   const handleGenerate = async () => {
-    if (!(selectedFile || imageUrl.trim())) {
-      toast.error('画像ファイルまたはURLを指定してください');
+    if (!selectedFile) {
+      toast.error('画像ファイルを指定してください');
       return;
     }
 
     try {
-      let fileBase64: string | undefined;
-      let fileName: string | undefined;
-      let url: string | undefined;
-
-      // ファイルアップロード優先
-      if (selectedFile) {
-        fileBase64 = await fileToBase64(selectedFile);
-        fileName = selectedFile.name;
-      } else if (imageUrl.trim()) {
-        url = imageUrl.trim();
+      const fileBase64 = await fileToBase64(selectedFile);
+      if (!fileBase64) {
+        toast.error(
+          'ファイルの読み込みに失敗しました。別の画像でお試しください。'
+        );
+        return;
       }
+      const fileName = selectedFile.name;
 
       await generateMutation.mutateAsync({
         fileBase64,
         fileName,
-        url,
       });
     } catch (_error) {
       // Error is handled by mutation's onError
@@ -140,14 +137,13 @@ export default function HomePage() {
   // 入力クリア
   const handleClear = () => {
     setSelectedFile(null);
-    setImageUrl('');
     setGeneratedImage(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const isValid = selectedFile || imageUrl.trim();
+  const isValid = Boolean(selectedFile);
   const isLoading = generateMutation.isPending;
 
   return (
@@ -155,7 +151,7 @@ export default function HomePage() {
       <div className="mb-8 text-center">
         <h1 className="mb-2 font-bold text-4xl">LGTM Maker</h1>
         <p className="text-muted-foreground">
-          画像をアップロードまたはURLを入力して、LGTM画像を生成します
+          画像をアップロードして、LGTM画像を生成します
         </p>
       </div>
 
@@ -163,7 +159,7 @@ export default function HomePage() {
         <CardHeader>
           <CardTitle>画像を選択</CardTitle>
           <CardDescription>
-            ファイルをアップロードするか、画像URLを入力してください（ファイル優先）
+            画像ファイルをアップロードしてください
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -177,19 +173,6 @@ export default function HomePage() {
               onChange={handleFileChange}
               ref={fileInputRef}
               type="file"
-            />
-          </div>
-
-          {/* URL入力 */}
-          <div className="space-y-2">
-            <Label htmlFor="url">画像URL（任意）</Label>
-            <Input
-              disabled={isLoading}
-              id="url"
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              type="url"
-              value={imageUrl}
             />
           </div>
 
@@ -235,7 +218,7 @@ export default function HomePage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 alt="Generated LGTM"
-                className="h-auto w-full transition-transform duration-200 hover:scale-105"
+                className="h-auto w-full"
                 src={generatedImage.imageUrl}
               />
             </button>
@@ -276,7 +259,13 @@ export default function HomePage() {
           role="dialog"
           tabIndex={-1}
         >
-          <div className="relative max-h-full max-w-full">
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal content container needs click handler to prevent closing */}
+          {/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: Modal content container needs click handler to prevent closing */}
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content container click is for event bubbling prevention only */}
+          <div
+            className="relative max-h-full max-w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               alt="Generated LGTM - Full Size"
@@ -284,6 +273,7 @@ export default function HomePage() {
               src={generatedImage.imageUrl}
             />
             <button
+              aria-label="モーダルを閉じる"
               className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               onClick={closeModal}
               type="button"

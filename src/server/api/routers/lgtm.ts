@@ -10,7 +10,7 @@ const generateInput = z
     url: z.string().url().optional(),
   })
   .refine((v) => !!v.fileBase64 || !!v.url, {
-    message: '画像ファイルまたはURLを指定してください',
+    message: '画像ファイルを指定してください',
   });
 
 export type GenerateResult = {
@@ -33,11 +33,12 @@ export const lgtmRouter = createTRPCRouter({
         const shortResult = shortenUrl(result.imageUrl);
 
         // 絶対URLを構築
-        const headers = ctx.req?.headers;
+        const host = ctx.headers.get('host');
+        const proto = ctx.headers.get('x-forwarded-proto');
         const baseUrl =
           process.env.BASE_URL ||
-          (headers?.host
-            ? `${headers?.['x-forwarded-proto'] || (headers.host.includes('localhost') ? 'http' : 'https')}://${headers.host}`
+          (host
+            ? `${proto || (host.includes('localhost') ? 'http' : 'https')}://${host}`
             : 'http://localhost:3000');
         const absoluteShortUrl = `${baseUrl}${shortResult.shortUrl}`;
 
