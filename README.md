@@ -11,6 +11,7 @@ LGTM Makerは、画像に「LGTM」テキストを合成し、Markdownで共有�
 - 画像アップロード・URL指定による画像読み込み
 - 画像に「LGTM」テキストを自動合成
 - 短縮URL生成とMarkdown形式での出力
+- 生成時の自動ダウンロードとクリップボードコピー
 - 生成画像のプレビュー表示
 
 ## Tech Stack
@@ -53,7 +54,7 @@ LGTM Makerは、画像に「LGTM」テキストを合成し、Markdownで共有�
   - Chromium、Firefox、Safariでの並列実ブラウザテスト
   - 強力なデバッグツールとCI/CD統合
   
-- **[Shadcn/UI](https://ui.shadcn.com)** - カスタマイズ可能UIコンポーネント
+- **[shadcn/ui](https://ui.shadcn.com)** - カスタマイズ可能UIコンポーネント
   - Copy & Paste方式で完全にカスタマイズ可能
   - Radix UI基盤でアクセシビリティ対応とTailwind CSS統合
 
@@ -125,7 +126,7 @@ bun run dev
 
 ## ディレクトリ構造
 
-```
+```text
 lgtm-maker/
 ├── __tests__/            # ユニットテストファイル
 ├── .github/              # GitHub関連設定
@@ -191,6 +192,8 @@ LGTM画像を生成します。
 ### `/s/[shortId]`
 
 短縮URLから元の画像にリダイレクトします。
+
+**注意**: 現在の実装はメモリベースのため、サーバー再起動時に短縮URLが失効します。
 
 ## 主要設定ファイルの詳細
 
@@ -286,7 +289,7 @@ bun run test:e2e
 bunx playwright install
 ```
 
-### コンポーネント追加（Shadcn/UI）
+### コンポーネント追加（shadcn/ui）
 
 UIコンポーネントを追加する場合は、shadcn/uiを使用します：
 
