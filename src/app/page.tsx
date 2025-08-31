@@ -16,10 +16,13 @@ import { api } from '~/trpc/react';
 
 interface GeneratedImage {
   imageUrl: string;
+  shortUrl: string;
   markdown: string;
+  markdownWithDataUrl: string;
   meta: {
     bytes: number;
     generatedAt: string;
+    shortId: string;
   };
 }
 
@@ -95,8 +98,8 @@ export default function HomePage() {
   };
 
   // 画像を別タブで開く
-  const openInNewTab = (dataUrl: string) => {
-    window.open(dataUrl, '_blank');
+  const openInNewTab = (url: string) => {
+    window.open(url, '_blank');
   };
 
   // LGTM生成実行
@@ -221,7 +224,8 @@ export default function HomePage() {
               {new Date(generatedImage.meta.generatedAt).toLocaleString(
                 'ja-JP'
               )}{' '}
-              | サイズ: {(generatedImage.meta.bytes / 1024).toFixed(1)}KB
+              | サイズ: {(generatedImage.meta.bytes / 1024).toFixed(1)}KB |
+              短縮URL: {generatedImage.shortUrl}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -250,18 +254,53 @@ export default function HomePage() {
                 Markdownコピー
               </Button>
               <Button
+                onClick={() => openInNewTab(generatedImage.shortUrl)}
+                variant="outline"
+              >
+                短縮URLで開く
+              </Button>
+              <Button
                 onClick={() => openInNewTab(generatedImage.imageUrl)}
                 variant="outline"
               >
-                画像を開く
+                画像データで開く
               </Button>
             </div>
 
             {/* Markdown表示 */}
-            <div className="space-y-2">
-              <Label>Markdown</Label>
-              <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
-                {generatedImage.markdown}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Markdown（短縮URL）</Label>
+                <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
+                  {generatedImage.markdown}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => copyMarkdown(generatedImage.markdown)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    短縮URL版をコピー
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Markdown（元画像データ）</Label>
+                <div className="max-h-32 overflow-y-auto break-all rounded-md bg-muted p-3 font-mono text-sm">
+                  {generatedImage.markdownWithDataUrl}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() =>
+                      copyMarkdown(generatedImage.markdownWithDataUrl)
+                    }
+                    size="sm"
+                    variant="outline"
+                  >
+                    データURL版をコピー
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
