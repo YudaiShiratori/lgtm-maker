@@ -9,7 +9,7 @@ import { TRPCReactProvider } from '~/trpc/react';
 export const metadata: Metadata = {
   title: 'LGTM Maker',
   description: '画像をアップロードしてLGTM画像を生成するツール',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+  icons: [{ rel: 'icon', url: '/logo.svg', type: 'image/svg+xml' }],
 };
 
 const notoSansJP = Noto_Sans_JP({
