@@ -25,17 +25,25 @@ export type GenerateResult = {
 export const lgtmRouter = createTRPCRouter({
   generate: publicProcedure
     .input(generateInput)
-    .mutation(async ({ input }): Promise<GenerateResult> => {
+    .mutation(async ({ input, ctx }): Promise<GenerateResult> => {
       try {
         const result = await generateLgtmImage(input);
 
         // 短縮URL生成
         const shortResult = shortenUrl(result.imageUrl);
 
+        // 絶対URLを構築
+        const headers = ctx.req?.headers;
+        const host = headers?.host || 'localhost:3000';
+        const protocol =
+          headers?.['x-forwarded-proto'] ||
+          (host.includes('localhost') ? 'http' : 'https');
+        const absoluteShortUrl = `${protocol}://${host}${shortResult.shortUrl}`;
+
         return {
           imageUrl: result.imageUrl,
-          shortUrl: shortResult.shortUrl,
-          markdown: `![LGTM](${shortResult.shortUrl})`,
+          shortUrl: shortResult.shortUrl, // UIでは相対パスを使用
+          markdown: `![LGTM](${absoluteShortUrl})`, // Markdownでは絶対URLを使用
           meta: {
             shortId: shortResult.shortId,
           },

@@ -34,8 +34,6 @@ export default function HomePage() {
   const generateMutation = api.lgtm.generate.useMutation({
     onSuccess: (data) => {
       setGeneratedImage(data);
-      // 自動ダウンロード（ファイル名にshortIdを反映）
-      downloadImage(data.imageUrl, `lgtm-${data.meta.shortId}.png`);
       // Markdown自動コピー
       copyMarkdown(data.markdown);
       toast.success(
@@ -73,16 +71,6 @@ export default function HomePage() {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
-  };
-
-  // 自動ダウンロード
-  const downloadImage = (dataUrl: string, fileName?: string) => {
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = fileName ?? `lgtm-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   // Markdownクリップボードコピー
@@ -216,7 +204,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* プレビュー画像 */}
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 alt="Generated LGTM"
