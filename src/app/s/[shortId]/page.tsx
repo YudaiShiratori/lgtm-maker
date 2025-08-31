@@ -8,8 +8,11 @@ interface PageProps {
 }
 
 export default async function ShortUrlPage({ params }: PageProps) {
+  const resolvedParams = await params;
   try {
-    const result = await api.shortener.expand({ shortId: params.shortId });
+    const result = await api.shortener.expand({
+      shortId: resolvedParams.shortId,
+    });
 
     // Data URLの場合は画像として表示
     if (result.originalUrl.startsWith('data:image/')) {
@@ -18,7 +21,7 @@ export default async function ShortUrlPage({ params }: PageProps) {
           <div className="mb-8 text-center">
             <h1 className="mb-2 font-bold text-2xl">LGTM画像</h1>
             <p className="text-muted-foreground">
-              短縮URL: /s/{params.shortId}
+              短縮URL: /s/{resolvedParams.shortId}
             </p>
           </div>
 
@@ -34,7 +37,7 @@ export default async function ShortUrlPage({ params }: PageProps) {
           <div className="mt-4 text-center">
             <a
               className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-              download={`lgtm-${params.shortId}.png`}
+              download={`lgtm-${resolvedParams.shortId}.png`}
               href={result.originalUrl}
             >
               画像をダウンロード
@@ -52,7 +55,8 @@ export default async function ShortUrlPage({ params }: PageProps) {
         <div className="text-center">
           <h1 className="mb-2 font-bold text-2xl">短縮URLが見つかりません</h1>
           <p className="mb-4 text-muted-foreground">
-            指定された短縮URL (/s/{params.shortId}) は存在しないか、無効です。
+            指定された短縮URL (/s/{resolvedParams.shortId})
+            は存在しないか、無効です。
           </p>
           <a
             className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"

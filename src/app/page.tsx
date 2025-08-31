@@ -18,10 +18,7 @@ interface GeneratedImage {
   imageUrl: string;
   shortUrl: string;
   markdown: string;
-  markdownWithDataUrl: string;
   meta: {
-    bytes: number;
-    generatedAt: string;
     shortId: string;
   };
 }
@@ -176,12 +173,6 @@ export default function HomePage() {
               ref={fileInputRef}
               type="file"
             />
-            {selectedFile && (
-              <p className="text-muted-foreground text-sm">
-                選択中: {selectedFile.name} (
-                {(selectedFile.size / 1024).toFixed(1)}KB)
-              </p>
-            )}
           </div>
 
           {/* URL入力 */}
@@ -222,14 +213,6 @@ export default function HomePage() {
         <Card>
           <CardHeader>
             <CardTitle>生成結果</CardTitle>
-            <CardDescription>
-              生成日時:{' '}
-              {new Date(generatedImage.meta.generatedAt).toLocaleString(
-                'ja-JP'
-              )}{' '}
-              | サイズ: {(generatedImage.meta.bytes / 1024).toFixed(1)}KB |
-              短縮URL: {generatedImage.shortUrl}
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* プレビュー画像 */}
@@ -245,17 +228,6 @@ export default function HomePage() {
             {/* アクションボタン */}
             <div className="flex flex-wrap gap-2">
               <Button
-                onClick={() =>
-                  downloadImage(
-                    generatedImage.imageUrl,
-                    `lgtm-${generatedImage.meta.shortId}.png`
-                  )
-                }
-                variant="outline"
-              >
-                再ダウンロード
-              </Button>
-              <Button
                 onClick={() => copyMarkdown(generatedImage.markdown)}
                 variant="outline"
               >
@@ -265,50 +237,15 @@ export default function HomePage() {
                 onClick={() => openInNewTab(generatedImage.shortUrl)}
                 variant="outline"
               >
-                短縮URLで開く
-              </Button>
-              <Button
-                onClick={() => openInNewTab(generatedImage.imageUrl)}
-                variant="outline"
-              >
-                画像データで開く
+                画像を開く
               </Button>
             </div>
 
             {/* Markdown表示 */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Markdown（短縮URL）</Label>
-                <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
-                  {generatedImage.markdown}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => copyMarkdown(generatedImage.markdown)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    短縮URL版をコピー
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Markdown（元画像データ）</Label>
-                <div className="max-h-32 overflow-y-auto break-all rounded-md bg-muted p-3 font-mono text-sm">
-                  {generatedImage.markdownWithDataUrl}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() =>
-                      copyMarkdown(generatedImage.markdownWithDataUrl)
-                    }
-                    size="sm"
-                    variant="outline"
-                  >
-                    データURL版をコピー
-                  </Button>
-                </div>
+            <div className="space-y-2">
+              <Label>Markdown</Label>
+              <div className="break-all rounded-md bg-muted p-3 font-mono text-sm">
+                {generatedImage.markdown}
               </div>
             </div>
           </CardContent>
